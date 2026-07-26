@@ -45,9 +45,9 @@ def main():
 
     print("\n=== 3. SYNTAX HIGHLIGHTING ===")
     print("--- ANSI Terminal Output ---")
-    print(SyntaxHighlighter.highlight_ansi(code, tokens))
+    print(SyntaxHighlighter.highlight_ansi(code, tokens, ast))
 
-    html_output = SyntaxHighlighter.highlight_html(code, tokens)
+    html_output = SyntaxHighlighter.highlight_html(code, tokens, ast)
     with open("output.html", "w", encoding="utf-8") as f:
         f.write(html_output)
     print("\nHTML output saved to 'output.html'!")
