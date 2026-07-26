@@ -1,0 +1,1 @@
+![CI/CD Pipeline](https://github.com/ZahraAghaeii/CompilerProject/actions/workflows/ci.yml/badge.svg)
