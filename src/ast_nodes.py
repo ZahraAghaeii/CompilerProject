@@ -77,3 +77,19 @@ class LiteralNode(ASTNode):
         super().__init__(line, column)
         self.value = value
         self.literal_type = literal_type
+
+class ForStmtNode(ASTNode):
+    def __init__(self, init, condition, step, body, line: int, column: int):
+        super().__init__(line, column)
+        self.init = init
+        self.condition = condition
+        self.step = step
+        self.body = body
+
+class BreakStmtNode(ASTNode):
+    def __init__(self, line: int, column: int):
+        super().__init__(line, column)
+
+class ContinueStmtNode(ASTNode):
+    def __init__(self, line: int, column: int):
+        super().__init__(line, column)

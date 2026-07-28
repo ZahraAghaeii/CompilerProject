@@ -1,6 +1,7 @@
 from src.lexer import TokenType, Token
 from src.ast_nodes import *
 
+
 class Parser:
     def __init__(self, tokens: list):
         self.tokens = [t for t in tokens if t.type != TokenType.COMMENT and t.type != TokenType.PREPROCESSOR]
@@ -34,7 +35,7 @@ class Parser:
         while self.pos < len(self.tokens):
             if self._peek(-1).value in (';', '}'):
                 return
-            if self._peek().value in ('if', 'while', 'for', 'return', 'int', 'float', 'char', 'void'):
+            if self._peek().value in ('if', 'while', 'for', 'return', 'break', 'continue', 'int', 'float', 'char', 'void', 'double', 'bool'):
                 return
             self.pos += 1
 
@@ -52,7 +53,7 @@ class Parser:
 
     def _parse_declaration(self):
         type_token = self._peek()
-        if type_token.value in ('int', 'float', 'char', 'void', 'double'):
+        if type_token.value in ('int', 'float', 'char', 'void', 'double', 'bool'):
             self.pos += 1
             name_token = self._consume(TokenType.IDENTIFIER, "Expected function or variable name")
             if not name_token:
@@ -83,7 +84,7 @@ class Parser:
         if self._peek().value != ')':
             while True:
                 p_type = self._peek().value
-                if p_type in ('int', 'float', 'char', 'void', 'double'):
+                if p_type in ('int', 'float', 'char', 'void', 'double', 'bool'):
                     self.pos += 1
                     p_name = self._consume(TokenType.IDENTIFIER, "Expected parameter name")
                     if p_name:
@@ -105,7 +106,7 @@ class Parser:
 
     def _parse_statement(self):
         curr = self._peek()
-        if curr.value in ('int', 'float', 'char', 'void', 'double'):
+        if curr.value in ('int', 'float', 'char', 'void', 'double', 'bool'):
             return self._parse_declaration()
         elif curr.value == 'if':
             self.pos += 1
@@ -124,6 +125,32 @@ class Parser:
             self._consume(')', "Expected ')' after condition")
             body = self._parse_statement()
             return WhileStmtNode(cond, body, curr.line, curr.column)
+        elif curr.value == 'for':
+            self.pos += 1
+            self._consume('(', "Expected '(' after 'for'")
+
+            init = None
+            if self._peek().value != ';':
+                if self._peek().value in ('int', 'float', 'char', 'void', 'double', 'bool'):
+                    init = self._parse_declaration()
+                else:
+                    init = self._parse_expression()
+                    self._consume(';', "Expected ';' after for initialization")
+            else:
+                self._consume(';', "Expected ';' after for initialization")
+
+            cond = None
+            if self._peek().value != ';':
+                cond = self._parse_expression()
+            self._consume(';', "Expected ';' after for condition")
+
+            step = None
+            if self._peek().value != ')':
+                step = self._parse_expression()
+            self._consume(')', "Expected ')' after for clauses")
+
+            body = self._parse_statement()
+            return ForStmtNode(init, cond, step, body, curr.line, curr.column)
         elif curr.value == 'return':
             self.pos += 1
             expr = None
@@ -131,6 +158,14 @@ class Parser:
                 expr = self._parse_expression()
             self._consume(';', "Expected ';' after return")
             return ReturnStmtNode(expr, curr.line, curr.column)
+        elif curr.value == 'break':
+            self.pos += 1
+            self._consume(';', "Expected ';' after break")
+            return BreakStmtNode(curr.line, curr.column)
+        elif curr.value == 'continue':
+            self.pos += 1
+            self._consume(';', "Expected ';' after continue")
+            return ContinueStmtNode(curr.line, curr.column)
         elif curr.value == '{':
             return self._parse_block()
         else:
@@ -189,6 +224,13 @@ class Parser:
         elif curr.type == TokenType.STRING_LITERAL:
             self.pos += 1
             return LiteralNode(curr.value, 'string', curr.line, curr.column)
+        elif curr.type == TokenType.CHAR_LITERAL:
+            self.pos += 1
+            return LiteralNode(curr.value, 'char', curr.line, curr.column)
+        elif curr.type == TokenType.BOOL_LITERAL:
+            self.pos += 1
+            val = True if curr.value == 'true' else False
+            return LiteralNode(val, 'bool', curr.line, curr.column)
         elif curr.type == TokenType.IDENTIFIER:
             self.pos += 1
             if self._match('('):
@@ -205,7 +247,7 @@ class Parser:
             expr = self._parse_expression()
             self._consume(')', "Expected ')'")
             return expr
-        
+
         self.errors.append(f"Parser Error at {curr.line}:{curr.column}: Unexpected expression token '{curr.value}'")
         self.pos += 1
         return None

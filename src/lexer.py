@@ -1,29 +1,32 @@
 from enum import Enum, auto
 
+
 class TokenType(Enum):
     # Keywords
     KEYWORD = auto()
-    
+
     # Literals
     INT_LITERAL = auto()
     FLOAT_LITERAL = auto()
     STRING_LITERAL = auto()
     CHAR_LITERAL = auto()
-    
+    BOOL_LITERAL = auto()
+
     # Identifiers
     IDENTIFIER = auto()
-    
+
     # Operators & Delimiters
     OPERATOR = auto()
     DELIMITER = auto()
-    
+
     # Preprocessor
     PREPROCESSOR = auto()
-    
+
     # Special / Error
     COMMENT = auto()
     INVALID = auto()
     EOF = auto()
+
 
 class Token:
     def __init__(self, type_: TokenType, value: str, line: int, column: int):
@@ -35,10 +38,11 @@ class Token:
     def __repr__(self):
         return f"Token({self.type.name}, '{self.value}', Line:{self.line}, Col:{self.column})"
 
+
 class Lexer:
     KEYWORDS = {
-        'if', 'else', 'while', 'for', 'return', 'int', 'float', 
-        'double', 'char', 'void', 'struct', 'break', 'continue'
+        'if', 'else', 'while', 'for', 'return', 'int', 'float',
+        'double', 'char', 'void', 'struct', 'break', 'continue', 'bool'
     }
 
     OPERATORS = [
@@ -133,6 +137,31 @@ class Lexer:
                     self.tokens.append(Token(TokenType.STRING_LITERAL, val, start_line, start_col))
                 continue
 
+            # Character Literals
+            if ch == "'":
+                val = self._advance()
+                terminated = False
+
+                if self._peek() == '\\':
+                    val += self._advance()
+                    if self._peek():
+                        val += self._advance()
+                else:
+                    if self._peek() and self._peek() not in ("'", '\n'):
+                        val += self._advance()
+
+                if self._peek() == "'":
+                    val += self._advance()
+                    terminated = True
+
+                if not terminated:
+                    self.errors.append(
+                        f"Lexer Error at {start_line}:{start_col}: Unterminated or invalid character literal")
+                    self.tokens.append(Token(TokenType.INVALID, val, start_line, start_col))
+                else:
+                    self.tokens.append(Token(TokenType.CHAR_LITERAL, val, start_line, start_col))
+                continue
+
             # Numbers
             if ch.isdigit():
                 val = ""
@@ -150,7 +179,14 @@ class Lexer:
                 val = ""
                 while self._peek().isalnum() or self._peek() == '_':
                     val += self._advance()
-                t_type = TokenType.KEYWORD if val in self.KEYWORDS else TokenType.IDENTIFIER
+
+                if val in ('true', 'false'):
+                    t_type = TokenType.BOOL_LITERAL
+                elif val in self.KEYWORDS:
+                    t_type = TokenType.KEYWORD
+                else:
+                    t_type = TokenType.IDENTIFIER
+
                 self.tokens.append(Token(t_type, val, start_line, start_col))
                 continue
 
