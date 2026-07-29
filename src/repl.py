@@ -12,15 +12,16 @@ def start_repl(file_path="tests/semantic_test.c"):
     tokens, _ = lexer.tokenize()
     parser = Parser(tokens)
     ast = parser.parse()
+
     analyzer = SemanticAnalyzer(file_name=file_path)
     analyzer.analyze(ast)
 
     prog_analyzer = ProgramAnalyzer(ast, analyzer.global_scope, code, file_path)
 
     print("\n========================================================")
-    print(" 🚀 COMPILER INTERACTIVE REPL CLI (PHASE 3) ")
-    print(" Commands: goto-def <sym> | find-refs <sym> | hover <sym>")
-    print("           rename <old> <new> <line> | callgraph | dead-code | exit")
+    print("   COMPILER INTERACTIVE REPL CLI (PHASE 3) ")
+    print(" Commands: goto-def <sym> <line> | find-refs <sym> <line> | hover <sym> <line>")
+    print("           rename <old> <new> <line> | callgraph | dead-code | data-flow | exit")
     print("========================================================\n")
 
     while True:
@@ -28,22 +29,30 @@ def start_repl(file_path="tests/semantic_test.c"):
             cmd = input("ide-cli> ").strip().split()
             if not cmd:
                 continue
+
             action = cmd[0].lower()
 
             if action == "exit":
                 break
-            elif action == "goto-def" and len(cmd) >= 2:
-                res = prog_analyzer.goto_definition_json(cmd[1])
+            elif action == "goto-def" and len(cmd) >= 3:
+                res = prog_analyzer.goto_definition_json(cmd[1], int(cmd[2]))
                 print(json.dumps(res, indent=2))
-            elif action == "hover" and len(cmd) >= 2:
-                print(prog_analyzer.hover_info(cmd[1]))
-            elif action == "find-refs" and len(cmd) >= 2:
-                res = prog_analyzer.goto_definition_json(cmd[1])
-                print(json.dumps(res.get("references", []), indent=2))
+            elif action == "hover" and len(cmd) >= 3:
+                print(prog_analyzer.hover_info(cmd[1], int(cmd[2])))
+            elif action == "find-refs" and len(cmd) >= 3:
+                res = prog_analyzer.goto_definition_json(cmd[1], int(cmd[2]))
+                if "error" in res:
+                    print(res["error"])
+                else:
+                    print(json.dumps(res.get("references", []), indent=2))
             elif action == "callgraph":
                 print(json.dumps({k: list(v) for k, v in prog_analyzer.build_call_graph().items()}, indent=2))
             elif action == "dead-code":
                 reports = prog_analyzer.detect_dead_code()
+                for r in reports:
+                    print(r)
+            elif action == "data-flow":
+                reports = prog_analyzer.analyze_definite_assignment()
                 for r in reports:
                     print(r)
             elif action == "rename" and len(cmd) >= 4:
@@ -53,9 +62,10 @@ def start_repl(file_path="tests/semantic_test.c"):
                     print("=== UNIFIED DIFF ===")
                     print(diff)
                 else:
-                    print(f"❌ Error: {new_code}")
+                    print(f"  Error: {new_code}")
             else:
-                print("Unknown or incomplete command.")
+                print("Unknown or incomplete command. Check arguments (e.g., hover <sym> <line>).")
+
         except Exception as e:
             print(f"Error executing command: {e}")
 

@@ -29,8 +29,11 @@ class Scope:
         self.scope_name = scope_name
         self.parent = parent
         self.symbols = {}
+        self.children = []
+        if parent:
+            parent.children.append(self)
 
-    def define(self, symbol: Symbol):
+    def define(self, symbol):
         self.symbols[symbol.name] = symbol
 
     def lookup(self, name: str):
