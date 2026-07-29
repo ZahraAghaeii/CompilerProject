@@ -124,7 +124,26 @@ def main():
     run_test_pipeline("3. Safe Rename (Scope Shadowing)", TEST_3_SHADOWING, "rename",
                       {"old": "val", "new": "inner_val", "line": 6})
     run_test_pipeline("4. Dead Code (Isolated Functions & Vars)", TEST_4_DEAD_ISOLATED, "dead-code")
+    try:
+        from src.highlighter import SyntaxHighlighter
 
+        html_test_file = "tests/test_code.c"
+        with open(html_test_file, "r", encoding="utf-8") as hf:
+            html_code = hf.read()
+
+        lexer_h = Lexer(html_code)
+        tokens_h, _ = lexer_h.tokenize()
+        parser_h = Parser(tokens_h)
+        ast_h = parser_h.parse()
+
+        html_output = SyntaxHighlighter.highlight_html(html_code, tokens_h, ast_h)
+        with open("output.html", "w", encoding="utf-8") as f:
+            f.write(html_output)
+
+        print("\n--- 7. Syntax Highlighter ---")
+        print("Successfully updated 'output.html' from 'tests/test_code.c'!")
+    except Exception as e:
+        print(f"\nCould not generate HTML output: {e}")
 
 if __name__ == "__main__":
     main()

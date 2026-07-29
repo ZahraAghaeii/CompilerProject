@@ -2,6 +2,7 @@
     <style>
         body { background-color: #1e1e1e; color: #d4d4d4; font-family: 'Consolas', monospace; padding: 20px; }
         .keyword { color: #569cd6; font-weight: bold; }
+        .type-name { color: #4ec9b0; } /* Teal/Cyan */
         .identifier { color: #9cdcfe; }
         .func-name { color: #dcdcaa; font-weight: bold; }
         .number { color: #b5cea8; }
@@ -12,19 +13,33 @@
         .delimiter { color: #ffd700; }
         .invalid { color: #f44747; text-decoration: underline; }
     </style>
-    </head>
-    </head><body><pre><span class="keyword">int</span> <span class="func-name">factorial</span><span class="delimiter">(</span><span class="keyword">int</span> <span class="identifier">n</span><span class="delimiter">)</span> <span class="delimiter">{</span>
-    <span class="keyword">int</span> <span class="identifier">unused_var</span> <span class="operator">=</span> <span class="number">10</span><span class="delimiter">;</span>
-    <span class="keyword">if</span> <span class="delimiter">(</span><span class="identifier">n</span> <span class="operator">&lt;=</span> <span class="number">1</span><span class="delimiter">)</span> <span class="delimiter">{</span>
-        <span class="keyword">return</span> <span class="number">1</span><span class="delimiter">;</span>
+    </head><body><pre><span class="preprocessor">#include &lt;stdio.h&gt;</span>
+
+<span class="type-name">int</span> <span class="func-name">compute_sum</span><span class="delimiter">(</span><span class="type-name">int</span> <span class="identifier">limit</span><span class="delimiter">)</span> <span class="delimiter">{</span>
+    <span class="type-name">int</span> <span class="identifier">sum</span> <span class="operator">=</span> <span class="number">0</span><span class="delimiter">;</span>
+    <span class="type-name">int</span> <span class="identifier">i</span> <span class="operator">=</span> <span class="number">0</span><span class="delimiter">;</span>
+
+    <span class="keyword">while</span> <span class="delimiter">(</span><span class="identifier">i</span> <span class="operator">&lt;</span> <span class="identifier">limit</span><span class="delimiter">)</span> <span class="delimiter">{</span>
+        <span class="keyword">if</span> <span class="delimiter">(</span><span class="identifier">i</span> <span class="operator">==</span> <span class="number">5</span><span class="delimiter">)</span> <span class="delimiter">{</span>
+            <span class="identifier">i</span> <span class="operator">=</span> <span class="identifier">i</span> <span class="operator">+</span> <span class="number">1</span><span class="delimiter">;</span>
+            <span class="keyword">continue</span><span class="delimiter">;</span>
+        <span class="delimiter">}</span>
+        <span class="identifier">sum</span> <span class="operator">=</span> <span class="identifier">sum</span> <span class="operator">+</span> <span class="identifier">i</span><span class="delimiter">;</span>
+        <span class="identifier">i</span> <span class="operator">=</span> <span class="identifier">i</span> <span class="operator">+</span> <span class="number">1</span><span class="delimiter">;</span>
     <span class="delimiter">}</span>
-    <span class="keyword">return</span> <span class="identifier">n</span> <span class="operator">*</span> <span class="func-name">factorial</span><span class="delimiter">(</span><span class="identifier">n</span> <span class="operator">-</span> <span class="number">1</span><span class="delimiter">)</span><span class="delimiter">;</span>
+
+    <span class="keyword">return</span> <span class="identifier">sum</span><span class="delimiter">;</span>
 <span class="delimiter">}</span>
 
-<span class="keyword">int</span> <span class="func-name">main</span><span class="delimiter">(</span><span class="delimiter">)</span> <span class="delimiter">{</span>
-    <span class="keyword">int</span> <span class="identifier">x</span> <span class="operator">=</span> <span class="number">5</span><span class="delimiter">;</span>
-    <span class="keyword">int</span> <span class="identifier">y</span> <span class="operator">=</span> <span class="string">"invalid_string_type"</span><span class="delimiter">;</span> <span class="comment">// Error: Type mismatch</span>
-    <span class="keyword">int</span> <span class="identifier">res</span> <span class="operator">=</span> <span class="func-name">factorial</span><span class="delimiter">(</span><span class="identifier">x</span><span class="delimiter">,</span> <span class="number">20</span><span class="delimiter">)</span><span class="delimiter">;</span>    <span class="preprocessor"># Error: Wrong argument count</span>
-    <span class="func-name">undefined_func</span><span class="delimiter">(</span><span class="delimiter">)</span><span class="delimiter">;</span>              <span class="comment">// Error: Undefined function</span>
+<span class="type-name">int</span> <span class="func-name">main</span><span class="delimiter">(</span><span class="delimiter">)</span> <span class="delimiter">{</span>
+    <span class="type-name">int</span> <span class="identifier">target</span> <span class="operator">=</span> <span class="number">10</span><span class="delimiter">;</span>
+    <span class="type-name">int</span> <span class="identifier">result</span> <span class="operator">=</span> <span class="func-name">compute_sum</span><span class="delimiter">(</span><span class="identifier">target</span><span class="delimiter">)</span><span class="delimiter">;</span>
+
+    <span class="keyword">for</span> <span class="delimiter">(</span><span class="type-name">int</span> <span class="identifier">j</span> <span class="operator">=</span> <span class="number">0</span><span class="delimiter">;</span> <span class="identifier">j</span> <span class="operator">&lt;</span> <span class="number">3</span><span class="delimiter">;</span> <span class="identifier">j</span> <span class="operator">=</span> <span class="identifier">j</span> <span class="operator">+</span> <span class="number">1</span><span class="delimiter">)</span> <span class="delimiter">{</span>
+        <span class="keyword">if</span> <span class="delimiter">(</span><span class="identifier">j</span> <span class="operator">==</span> <span class="number">2</span><span class="delimiter">)</span> <span class="delimiter">{</span>
+            <span class="keyword">break</span><span class="delimiter">;</span>
+        <span class="delimiter">}</span>
+    <span class="delimiter">}</span>
+
     <span class="keyword">return</span> <span class="number">0</span><span class="delimiter">;</span>
 <span class="delimiter">}</span></pre></body></html>
