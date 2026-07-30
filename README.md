@@ -55,6 +55,12 @@ This project covers the complete compilation pipeline, from **lexical analysis**
     - Indentation style
     - File extension
 
+- **Docker Containerization**
+  - Full Docker support for environment isolation, containerized testing, and seamless deployment.
+
+- **Automated Unit Testing & Coverage**
+  - Full `pytest` integration covering Lexer, Parser, Semantic Analyzer, and Language Detector components.
+
 - **CI/CD Automation**
   - GitHub Actions automatically runs tests, generates HTML outputs, and deploys reports to GitHub Pages.
 
@@ -83,13 +89,16 @@ CompilerProject/
 │   ├── repl.py
 │   └── semantic.py
 │
-├── tests
+├── tests/
+│   ├── test_compiler.py
 │   ├── semantic_test.c
 │   ├── test_code.c
 │   ├── test_semantic_errors.c
 │   ├── test_semantic_scopes.c
 │   └── test_semantic_types.c
 │
+├── Dockerfile
+├── requirements.txt
 ├── web_ui.py
 ├── main.py
 └── README.md
@@ -97,32 +106,28 @@ CompilerProject/
 
 ---
 
-# 💻 Installation
+# 💻 Installation & Usage
 
 ## Prerequisites
 
 - Python 3.10+
-- Flask
-
-Install the required package:
+- Dependencies: Install via `requirements.txt`
 
 ```bash
-pip install flask
+pip install -r requirements.txt
 ```
 
 ---
 
-# ▶️ Usage
+## ▶️ Usage
 
-## Run the Compiler via CLI
+### Run the Compiler via CLI
 
 ```bash
 python main.py tests/test_code.c
 ```
 
----
-
-## Launch the Web IDE
+### Launch the Web IDE
 
 ```bash
 python web_ui.py
@@ -131,20 +136,40 @@ python web_ui.py
 Then open:
 
 ```
-http://127.0.0.1:5000
+[http://127.0.0.1:5000](http://127.0.0.1:5000)
 ```
 
 ---
 
-<!-- # 🧪 Running Tests
+# 🐳 Docker Deployment
 
-Execute all unit tests:
+To build and run the compiler project using Docker:
 
 ```bash
-python -m unittest discover -s tests
-``` -->
+# Build the Docker image
+docker build -t compiler-project .
 
-<!-- --- -->
+# Run the container
+docker run -it compiler-project
+```
+
+---
+
+# 🧪 Automated Testing & Coverage
+
+This project uses `pytest` and `pytest-cov` for automated testing and code coverage analysis.
+
+### Run Unit Tests
+```bash
+py -m pytest tests/
+```
+
+### Run Tests with Coverage Report
+```bash
+py -m pytest --cov=src tests/
+```
+
+---
 
 # 📊 CI/CD Workflow
 
