@@ -4,7 +4,7 @@
 
 An end-to-end **Compiler Front-End** and **Advanced Web-Based IDE Analysis Engine** built in Python.
 
-This project covers the complete compilation pipeline, from **lexical analysis** to **abstract syntax tree generation**, **semantic analysis**, and advanced IDE features including **Data-Flow Analysis**, **Visual Call Graph Generation**, **Interactive AST Diagrams**, **Automatic Language Detection**, and **Safe Refactoring**.
+This project covers the complete compilation pipeline, from **lexical analysis** to **abstract syntax tree generation**, **semantic analysis**, **intermediate code generation (TAC)**, and advanced IDE features including **Data-Flow Analysis**, **Dead Code Elimination (DCE)**, **Visual Call Graph Generation**, **Interactive AST Diagrams**, **Automatic Language Detection**, and **Safe Refactoring**.
 
 ---
 
@@ -28,8 +28,11 @@ This project covers the complete compilation pipeline, from **lexical analysis**
 
 ## ⚡ 2. Advanced Program Analysis & IDE Engine
 
-- **Dead Code Detection**
-  - Detects unreachable statements and unused code blocks.
+- **Dead Code Detection & Elimination (DCE)**
+  - Detects unreachable statements, unused variable declarations, and automatically removes dead code paths.
+
+- **Intermediate Code Generation (TAC / IR Generation) (`src/ir_generator.py`)**
+  - Transforms the AST into linear Three-Address Code (TAC) for intermediate representation and optimization analysis.
 
 - **Data-Flow Analysis (`src/program_analysis.py`)**
   - Tracks variable definitions, uses, and liveness across control-flow paths.
@@ -38,7 +41,7 @@ This project covers the complete compilation pipeline, from **lexical analysis**
   - Builds inter-procedural function call graphs with both JSON output and interactive visual diagrams.
 
 - **Safe Rename Refactoring**
-  - Renames identifiers safely while preserving scope correctness.
+  - Renames identifiers safely across the code while preserving scope correctness and displaying a unified diff.
 
 - **Auto-Completion (`src/completion.py`)**
   - Provides intelligent code completion suggestions based on scope analysis.
@@ -53,19 +56,25 @@ This project covers the complete compilation pipeline, from **lexical analysis**
 - **Visual Call Graph Rendering**
   - Graphical representation of function dependencies directly within the Web IDE console.
 
+- **Three-Address Code (TAC) Generator (`src/ir_generator.py`)**
+  - Renders low-level intermediate code instructions (`t1 = 5 + 3`, `x = t1`) from source code.
+
+- **Automatic Dead Code Elimination (DCE)**
+  - Cleans up AST/source code by stripping unreferenced variables and unused code constructs.
+
 - **Automatic Language Detection (`src/detector.py`)**
   - Predicts the programming language of an input code snippet (Python, C/C++, Java, JavaScript, Bash) using:
     - Shebang detection
     - Keyword frequency analysis
     - Delimiter patterns
     - Indentation style
-    - File extension
+    - File extension analysis
 
 - **Docker Containerization**
-  - Full Docker support for environment isolation, containerized testing, and seamless deployment.
+  - Full Docker support (`Dockerfile`) for environment isolation, containerized testing, and seamless deployment.
 
 - **Automated Unit Testing & Coverage**
-  - Full `pytest` integration covering Lexer, Parser, Semantic Analyzer, and Language Detector components with coverage report generation.
+  - Full `pytest` integration covering Lexer, Parser, Semantic Analyzer, IR Generator, and Language Detector components with coverage report generation.
 
 - **CI/CD Automation**
   - GitHub Actions automatically runs tests, generates HTML outputs, and deploys reports to GitHub Pages.
@@ -89,6 +98,7 @@ CompilerProject/
 │   ├── completion.py
 │   ├── detector.py
 │   ├── highlighter.py
+│   ├── ir_generator.py
 │   ├── lexer.py
 │   ├── parser.py
 │   ├── program_analysis.py
@@ -108,6 +118,10 @@ CompilerProject/
 ├── web_ui.py
 ├── main.py
 └── README.md
+```
+
+---
+
 # 💻 Installation & Usage
 
 ## Prerequisites
@@ -129,13 +143,13 @@ pip install -r requirements.txt
 python main.py tests/test_code.c
 ```
 
-### Launch the Web IDE (with AST Visualizer)
+### Launch the Web IDE (with AST & Visual Features)
 
 ```bash
 python web_ui.py
 ```
 
-Then open:
+Then open your browser at:
 
 ```
 [http://127.0.0.1:5000](http://127.0.0.1:5000)
@@ -152,7 +166,7 @@ To build and run the compiler project using Docker:
 docker build -t compiler-project .
 
 # Run the container
-docker run -it compiler-project
+docker run -p 5000:5000 compiler-project
 ```
 
 ---
