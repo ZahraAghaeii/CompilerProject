@@ -1,4 +1,4 @@
-# 🚀 Compiler & Advanced IDE Infrastructure (Phase 3)
+# 🚀 Compiler & Advanced IDE Infrastructure
 
 [![CI/CD Pipeline](https://github.com/ZahraAghaeii/CompilerProject/actions/workflows/ci.yml/badge.svg)](https://github.com/ZahraAghaeii/CompilerProject/actions)
 
@@ -83,7 +83,12 @@ CompilerProject/
 │   ├── repl.py
 │   └── semantic.py
 │
-├── tests/
+├── tests
+│   ├── semantic_test.c
+│   ├── test_code.c
+│   ├── test_semantic_errors.c
+│   ├── test_semantic_scopes.c
+│   └── test_semantic_types.c
 │
 ├── web_ui.py
 ├── main.py
