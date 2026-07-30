@@ -4,6 +4,7 @@ from src.lexer import Lexer
 from src.parser import Parser
 from src.semantic import SemanticAnalyzer
 from src.program_analysis import CFGBuilder, ProgramAnalyzer
+from src.detector import LanguageDetector
 
 app = Flask(__name__)
 
@@ -53,6 +54,7 @@ int main() {
                 <button onclick="runAnalysis('dead-code')">💀 Detect Dead Code</button>
                 <button onclick="runAnalysis('data-flow')">🌊 Analyze Data Flow</button>
                 <button onclick="runAnalysis('callgraph')">📞 Show Call Graph</button>
+                <button onclick="runDetectLanguage()">🔍 Detect Language</button>
             </div>
         </div>
 
@@ -106,6 +108,25 @@ int main() {
             };
             const res = await postData('/' + endpoint, data);
             document.getElementById('output').innerText = res.output;
+        }
+
+        async function runDetectLanguage() {
+            document.getElementById('output').innerText = "Detecting programming language... ⏳";
+            const res = await postData('/detect-language', { code: getCode() });
+            
+            if (res.language === "Unknown") {
+                document.getElementById('output').innerText = "Could not confidently detect the language.";
+                return;
+            }
+
+            let outputText = `🔎 Detected Language: ${res.language}\n`;
+            outputText += `🎯 Confidence: ${res.confidence}%\n\n`;
+            outputText += `📊 Scores Breakdown:\n`;
+            for (const [lang, score] of Object.entries(res.scores)) {
+                outputText += `  - ${lang}: ${score}%\n`;
+            }
+
+            document.getElementById('output').innerText = outputText;
         }
     </script>
 </body>
@@ -176,6 +197,16 @@ def rename():
     ok, new_code, diff = analyzer.safe_rename(req['symbol'], req['new_name'], req['line'])
     return jsonify({"output": diff if ok else f"Error: {new_code}"})
 
+
+@app.route('/detect-language', methods=['POST'])
+def detect_language():
+    data = request.json
+    code = data.get('code', '')
+    filename = data.get('filename', '') 
+    
+    detector = LanguageDetector()
+    result = detector.detect(code, filename)
+    return jsonify(result)
 
 if __name__ == '__main__':
     print("🌟 Web UI is starting! Open your browser and go to: http://127.0.0.1:5000")
