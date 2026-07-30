@@ -136,13 +136,13 @@ http://127.0.0.1:5000
 
 ---
 
-# 🧪 Running Tests
+<!-- # 🧪 Running Tests
 
 Execute all unit tests:
 
 ```bash
 python -m unittest discover -s tests
-```
+``` -->
 
 ---
 
