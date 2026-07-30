@@ -3,8 +3,9 @@ import json
 from src.lexer import Lexer
 from src.parser import Parser
 from src.semantic import SemanticAnalyzer
-from src.program_analysis import CFGBuilder, ProgramAnalyzer
+from src.program_analysis import ProgramAnalyzer
 from src.detector import LanguageDetector
+from src.ir_generator import IRGenerator
 
 app = Flask(__name__)
 
@@ -13,7 +14,7 @@ HTML_TEMPLATE = """
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Compiler IDE - Advanced Web UI</title>
+    <title>Compiler IDE - Ultimate Edition</title>
     <!-- Mermaid.js for visual rendering of AST and Call Graph -->
     <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
     <script>mermaid.initialize({ startOnLoad: false, theme: 'dark' });</script>
@@ -24,7 +25,7 @@ HTML_TEMPLATE = """
         .editor-section, .output-section { flex: 1; display: flex; flex-direction: column; gap: 15px; }
         textarea { width: 100%; height: 350px; background-color: #2d2d2d; color: #dcdcaa; font-family: 'Consolas', monospace; font-size: 14px; padding: 15px; border: 1px solid #444; border-radius: 5px; box-sizing: border-box; resize: vertical; }
         .panel { background-color: #252526; padding: 15px; border: 1px solid #333; border-radius: 5px; }
-        button { background-color: #0e639c; color: white; border: none; padding: 10px 15px; cursor: pointer; margin-right: 5px; margin-bottom: 5px; border-radius: 4px; font-weight: bold; transition: 0.2s; }
+        button { background-color: #0e639c; color: white; border: none; padding: 8px 12px; cursor: pointer; margin-right: 5px; margin-bottom: 5px; border-radius: 4px; font-weight: bold; transition: 0.2s; }
         button:hover { background-color: #1177bb; }
         input { padding: 8px; background-color: #3c3c3c; color: white; border: 1px solid #555; margin-right: 5px; border-radius: 4px; }
         pre { white-space: pre-wrap; word-wrap: break-word; color: #9cdcfe; font-family: 'Consolas', monospace; margin: 0; }
@@ -33,30 +34,27 @@ HTML_TEMPLATE = """
     </style>
 </head>
 <body>
-    <h2>🚀 Compiler Advanced IDE (Bonus Phase Included)</h2>
+    <h2>🚀 Compiler Advanced IDE (Ultimate Bonus Package)</h2>
 
     <div class="container">
         <!-- Source Code Editor Section -->
         <div class="editor-section">
             <div class="panel">
                 <h3 style="margin-top: 0; color: #ce9178;">Source Code</h3>
-                <textarea id="code">int factorial(int n) {
-    if (n <= 1) return 1;
-    return n * factorial(n - 1);
-}
-
-int main() {
-    int x = 5;
-    int unused_var = 100; // Dead Code Example
-    int res = factorial(x);
-    return 0;
+                <textarea id="code">int main() {
+    int x = 5 + 3;
+    int unused_var;
+    int y = x * 2;
+    return y;
 }</textarea>
             </div>
 
             <div class="panel">
                 <h3 style="margin-top: 0; color: #4ec9b0;">Program Analysis & Optimization (Bonus Features)</h3>
                 <button onclick="runAnalysis('dead-code')">💀 Detect Dead Code</button>
-                <button onclick="runAnalysis('data-flow')">🌊 Analyze Data Flow</button>
+                <button onclick="runAnalysis('eliminate-dead-code')" style="background-color: #d16969;">✂️ Eliminate Dead Code (DCE)</button>
+                <button onclick="runAnalysis('generate-ir')" style="background-color: #ce9178;">⚡ Generate TAC (IR Code)</button>
+                <button onclick="runAnalysis('data-flow')">🌊 Data Flow</button>
                 <button onclick="runAnalysis('callgraph')">📞 Call Graph (JSON)</button>
                 <button onclick="runVisualCallGraph()">📊 Visual Call Graph</button>
                 <button onclick="runVisualAST()" style="background-color: #6a9955;">🌳 Visual AST Diagram</button>
@@ -67,9 +65,9 @@ int main() {
         <!-- Navigation and Output Section -->
         <div class="output-section">
             <div class="panel controls-grid">
-                <label>Symbol:</label> <input type="text" id="sym" placeholder="e.g. factorial">
-                <label>Line:</label> <input type="number" id="line" value="1">
-                <label>New Name:</label> <input type="text" id="newName" placeholder="For rename feature">
+                <label>Symbol:</label> <input type="text" id="sym" placeholder="e.g. x">
+                <label>Line:</label> <input type="number" id="line" value="2">
+                <label>New Name:</label> <input type="text" id="newName" placeholder="New name">
 
                 <div style="grid-column: 1 / -1; margin-top: 10px;">
                     <button onclick="runAction('hover')" style="background-color: #569cd6;">ℹ️ Hover Info</button>
@@ -206,6 +204,21 @@ def dead_code():
     _, analyzer = analyze_code_from_web(request.json['code'])
     reports = analyzer.detect_dead_code()
     return jsonify({"output": "\n".join(reports)})
+
+
+@app.route('/eliminate-dead-code', methods=['POST'])
+def eliminate_dead_code():
+    _, analyzer = analyze_code_from_web(request.json['code'])
+    optimized_code = analyzer.eliminate_dead_code()
+    return jsonify({"output": optimized_code})
+
+
+@app.route('/generate-ir', methods=['POST'])
+def generate_ir():
+    ast, _ = analyze_code_from_web(request.json['code'])
+    generator = IRGenerator()
+    tac_code = generator.generate(ast)
+    return jsonify({"output": tac_code if tac_code else "No TAC generated."})
 
 
 @app.route('/data-flow', methods=['POST'])

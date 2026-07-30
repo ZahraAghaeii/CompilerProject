@@ -156,7 +156,7 @@ class ProgramAnalyzer:
 
     def build_call_graph(self):
         graph = {}
-        for decl in self.ast.declarations:
+        for decl in getattr(self.ast, 'declarations', []):
             if isinstance(decl, FunctionDeclNode):
                 graph[decl.name] = set()
                 self._extract_calls(decl.body, graph[decl.name])
@@ -188,14 +188,14 @@ class ProgramAnalyzer:
             return {"error": f"Symbol '{symbol_name}' not found at line {target_line}"}
 
         refs = []
-        for r in sym.references:
+        for r in getattr(sym, 'references', []):
             refs.append({"file": r["file"], "line": r["line"], "col": r["col"]})
 
         return {
             "symbol": sym.name,
             "kind": sym.kind,
-            "type": sym.type_spec + (f"({', '.join(sym.signature)})" if sym.signature else ""),
-            "defined_at": sym.definition_loc,
+            "type": sym.type_spec + (f"({', '.join(sym.signature)})" if getattr(sym, 'signature', None) else ""),
+            "defined_at": getattr(sym, 'definition_loc', {'line': sym.line}),
             "references": refs
         }
 
@@ -204,7 +204,7 @@ class ProgramAnalyzer:
 
         if not sym:
             return "Symbol not found"
-        sig = f"({', '.join(sym.signature)}) -> {sym.type_spec}" if sym.signature else f": {sym.type_spec}"
+        sig = f"({', '.join(sym.signature)}) -> {sym.type_spec}" if getattr(sym, 'signature', None) else f": {sym.type_spec}"
         return f"[{sym.kind.upper()}] {sym.name}{sig}\nDefined at line {sym.line}, scope: {scope.scope_name}"
 
     def safe_rename(self, target_symbol: str, new_name: str, target_line: int):
@@ -216,12 +216,13 @@ class ProgramAnalyzer:
         if new_name in scope.symbols and scope.symbols[new_name] != sym:
             return False, f"Conflict error: Symbol '{new_name}' already exists in scope '{scope.scope_name}'.", ""
 
-        affected_locations = [sym.definition_loc] + sym.references
+        affected_locations = [getattr(sym, 'definition_loc', {'line': sym.line})] + getattr(sym, 'references', [])
         new_lines = list(self.code_lines)
         for loc in affected_locations:
             l_idx = loc['line'] - 1
-            line_str = new_lines[l_idx]
-            new_lines[l_idx] = re.sub(rf'\b{target_symbol}\b', new_name, line_str)
+            if 0 <= l_idx < len(new_lines):
+                line_str = new_lines[l_idx]
+                new_lines[l_idx] = re.sub(rf'\b{target_symbol}\b', new_name, line_str)
 
         diff = list(difflib.unified_diff(
             self.code_lines, new_lines,
@@ -283,12 +284,38 @@ class ProgramAnalyzer:
 
         return reports
 
+    def eliminate_dead_code(self):
+        """
+        Bonus Feature: Performs actual Dead Code Elimination (DCE).
+        Removes unused variables and unreachable lines from source code.
+        """
+        lines = list(self.code_lines)
+        dead_reports = self.detect_dead_code()
+        lines_to_remove = set()
+
+        for report in dead_reports:
+            if "UNUSED VARIABLE" in report and "line" in report:
+                try:
+                    line_num = int(report.split("line")[1].split()[0].strip())
+                    lines_to_remove.add(line_num - 1)
+                except ValueError:
+                    pass
+            elif "UNREACHABLE CODE" in report and "line" in report:
+                try:
+                    line_num = int(report.split("line")[1].split()[0].strip())
+                    lines_to_remove.add(line_num - 1)
+                except ValueError:
+                    pass
+
+        optimized_lines = [line for idx, line in enumerate(lines) if idx not in lines_to_remove]
+        return "\n".join(optimized_lines)
+
     def _check_dead_vars_in_scope(self, scope, reports):
         if not scope:
             return
 
         for sym in scope.symbols.values():
-            if sym.kind == 'variable' and not sym.is_used:
+            if getattr(sym, 'kind', '') == 'variable' and not getattr(sym, 'is_used', True):
                 reports.append(f"  UNUSED VARIABLE: '{sym.name}' declared at line {sym.line} is never read")
 
         if hasattr(scope, 'children'):
@@ -301,7 +328,7 @@ class ProgramAnalyzer:
 
         cfg_builder = CFGBuilder()
 
-        for decl in self.ast.declarations:
+        for decl in getattr(self.ast, 'declarations', []):
             if not isinstance(decl, FunctionDeclNode) or not decl.body:
                 continue
 
@@ -335,7 +362,7 @@ class ProgramAnalyzer:
 
             def get_def_use(stmt):
                 defs, uses = set(), set()
-                if isinstance(stmt, VarDeclNode) and stmt.init_expr:
+                if isinstance(stmt, VarDeclNode) and getattr(stmt, 'init_expr', None):
                     defs.add(stmt.name)
                 elif isinstance(stmt, AssignmentNode):
                     defs.add(stmt.name)
@@ -355,7 +382,7 @@ class ProgramAnalyzer:
                 if isinstance(stmt, AssignmentNode):
                     extract_uses(stmt.expr)
                 elif isinstance(stmt, VarDeclNode):
-                    extract_uses(stmt.init_expr)
+                    extract_uses(getattr(stmt, 'init_expr', None))
                 else:
                     extract_uses(stmt)
 
@@ -400,9 +427,12 @@ class ProgramAnalyzer:
         return reports
 
     def _find_symbol_by_line(self, scope, name, line):
-        if name in scope.symbols:
+        if not scope:
+            return None, None
+        if hasattr(scope, 'symbols') and name in scope.symbols:
             sym = scope.symbols[name]
-            if sym.line == line or any(r['line'] == line for r in sym.references):
+            refs = getattr(sym, 'references', [])
+            if sym.line == line or any(r.get('line') == line for r in refs if isinstance(r, dict)):
                 return sym, scope
 
         for child in getattr(scope, 'children', []):
