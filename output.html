@@ -1,0 +1,45 @@
+<html><head>
+    <style>
+        body { background-color: #1e1e1e; color: #d4d4d4; font-family: 'Consolas', monospace; padding: 20px; }
+        .keyword { color: #569cd6; font-weight: bold; }
+        .type-name { color: #4ec9b0; } /* Teal/Cyan */
+        .identifier { color: #9cdcfe; }
+        .func-name { color: #dcdcaa; font-weight: bold; }
+        .number { color: #b5cea8; }
+        .string { color: #ce9178; }
+        .comment { color: #6a9955; font-style: italic; }
+        .preprocessor { color: #c586c0; }
+        .operator { color: #d4d4d4; }
+        .delimiter { color: #ffd700; }
+        .invalid { color: #f44747; text-decoration: underline; }
+    </style>
+    </head><body><pre><span class="preprocessor">#include &lt;stdio.h&gt;</span>
+
+<span class="type-name">int</span> <span class="func-name">compute_sum</span><span class="delimiter">(</span><span class="type-name">int</span> <span class="identifier">limit</span><span class="delimiter">)</span> <span class="delimiter">{</span>
+    <span class="type-name">int</span> <span class="identifier">sum</span> <span class="operator">=</span> <span class="number">0</span><span class="delimiter">;</span>
+    <span class="type-name">int</span> <span class="identifier">i</span> <span class="operator">=</span> <span class="number">0</span><span class="delimiter">;</span>
+
+    <span class="keyword">while</span> <span class="delimiter">(</span><span class="identifier">i</span> <span class="operator">&lt;</span> <span class="identifier">limit</span><span class="delimiter">)</span> <span class="delimiter">{</span>
+        <span class="keyword">if</span> <span class="delimiter">(</span><span class="identifier">i</span> <span class="operator">==</span> <span class="number">5</span><span class="delimiter">)</span> <span class="delimiter">{</span>
+            <span class="identifier">i</span> <span class="operator">=</span> <span class="identifier">i</span> <span class="operator">+</span> <span class="number">1</span><span class="delimiter">;</span>
+            <span class="keyword">continue</span><span class="delimiter">;</span>
+        <span class="delimiter">}</span>
+        <span class="identifier">sum</span> <span class="operator">=</span> <span class="identifier">sum</span> <span class="operator">+</span> <span class="identifier">i</span><span class="delimiter">;</span>
+        <span class="identifier">i</span> <span class="operator">=</span> <span class="identifier">i</span> <span class="operator">+</span> <span class="number">1</span><span class="delimiter">;</span>
+    <span class="delimiter">}</span>
+
+    <span class="keyword">return</span> <span class="identifier">sum</span><span class="delimiter">;</span>
+<span class="delimiter">}</span>
+
+<span class="type-name">int</span> <span class="func-name">main</span><span class="delimiter">(</span><span class="delimiter">)</span> <span class="delimiter">{</span>
+    <span class="type-name">int</span> <span class="identifier">target</span> <span class="operator">=</span> <span class="number">10</span><span class="delimiter">;</span>
+    <span class="type-name">int</span> <span class="identifier">result</span> <span class="operator">=</span> <span class="func-name">compute_sum</span><span class="delimiter">(</span><span class="identifier">target</span><span class="delimiter">)</span><span class="delimiter">;</span>
+
+    <span class="keyword">for</span> <span class="delimiter">(</span><span class="type-name">int</span> <span class="identifier">j</span> <span class="operator">=</span> <span class="number">0</span><span class="delimiter">;</span> <span class="identifier">j</span> <span class="operator">&lt;</span> <span class="number">3</span><span class="delimiter">;</span> <span class="identifier">j</span> <span class="operator">=</span> <span class="identifier">j</span> <span class="operator">+</span> <span class="number">1</span><span class="delimiter">)</span> <span class="delimiter">{</span>
+        <span class="keyword">if</span> <span class="delimiter">(</span><span class="identifier">j</span> <span class="operator">==</span> <span class="number">2</span><span class="delimiter">)</span> <span class="delimiter">{</span>
+            <span class="keyword">break</span><span class="delimiter">;</span>
+        <span class="delimiter">}</span>
+    <span class="delimiter">}</span>
+
+    <span class="keyword">return</span> <span class="number">0</span><span class="delimiter">;</span>
+<span class="delimiter">}</span></pre></body></html>

@@ -1,0 +1,63 @@
+program         ::= ( declaration | preprocessor )* EOF ;
+
+preprocessor    ::= PREPROCESSOR ;
+
+declaration     ::= function_decl | var_decl ;
+
+type_spec       ::= 'int' | 'float' | 'char' | 'void' | 'double' ;
+
+function_decl   ::= type_spec IDENTIFIER '(' param_list? ')' block ;
+
+param_list      ::= param ( ',' param )* ;
+
+param           ::= type_spec IDENTIFIER ;
+
+var_decl        ::= type_spec IDENTIFIER ( '=' expr )? ';' ;
+
+block           ::= '{' statement* '}' ;
+
+statement       ::= if_stmt 
+                  | while_stmt 
+                  | for_stmt 
+                  | return_stmt 
+                  | expr_stmt 
+                  | block 
+                  | var_decl ;
+
+if_stmt         ::= 'if' '(' expr ')' statement ( 'else' statement )? ;
+
+while_stmt      ::= 'while' '(' expr ')' statement ;
+
+for_stmt        ::= 'for' '(' expr_stmt expr_stmt expr? ')' statement ;
+
+return_stmt     ::= 'return' expr? ';' ;
+
+expr_stmt       ::= expr? ';' ;
+
+expr            ::= assignment ;
+
+assignment      ::= IDENTIFIER ( '=' | '+=' | '-=' | '*=' | '/=' ) assignment | logical_or ;
+
+logical_or      ::= logical_and ( '||' logical_and )* ;
+
+logical_and     ::= equality ( '&&' equality )* ;
+
+equality        ::= relational ( ( '==' | '!=' ) relational )* ;
+
+relational      ::= additive ( ( '<' | '>' | '<=' | '>=' ) additive )* ;
+
+additive        ::= multiplicative ( ( '+' | '-' ) multiplicative )* ;
+
+multiplicative  ::= unary ( ( '*' | '/' | '%' ) unary )* ;
+
+unary           ::= ( '-' | '!' ) unary | primary ;
+
+primary         ::= INT_LITERAL 
+                  | FLOAT_LITERAL 
+                  | STRING_LITERAL 
+                  | CHAR_LITERAL 
+                  | IDENTIFIER '(' arg_list? ')' 
+                  | IDENTIFIER 
+                  | '(' expr ')' ;
+
+arg_list        ::= expr ( ',' expr )* ;
