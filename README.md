@@ -4,7 +4,7 @@
 
 An end-to-end **Compiler Front-End** and **Advanced Web-Based IDE Analysis Engine** built in Python.
 
-This project covers the complete compilation pipeline, from **lexical analysis** to **abstract syntax tree generation**, **semantic analysis**, and advanced IDE features including **Data-Flow Analysis**, **Call Graph Generation**, **Automatic Language Detection**, and **Safe Refactoring**.
+This project covers the complete compilation pipeline, from **lexical analysis** to **abstract syntax tree generation**, **semantic analysis**, and advanced IDE features including **Data-Flow Analysis**, **Visual Call Graph Generation**, **Interactive AST Diagrams**, **Automatic Language Detection**, and **Safe Refactoring**.
 
 ---
 
@@ -34,8 +34,8 @@ This project covers the complete compilation pipeline, from **lexical analysis**
 - **Data-Flow Analysis (`src/program_analysis.py`)**
   - Tracks variable definitions, uses, and liveness across control-flow paths.
 
-- **Call Graph Generation**
-  - Builds function call graphs for inter-procedural analysis.
+- **Call Graph Generation & Visualization**
+  - Builds inter-procedural function call graphs with both JSON output and interactive visual diagrams.
 
 - **Safe Rename Refactoring**
   - Renames identifiers safely while preserving scope correctness.
@@ -46,6 +46,12 @@ This project covers the complete compilation pipeline, from **lexical analysis**
 ---
 
 ## 🌟 3. Bonus Features
+
+- **Interactive AST Visualizer (`web_ui.py`)**
+  - Renders interactive, graphical AST diagrams in real-time using Mermaid.js.
+
+- **Visual Call Graph Rendering**
+  - Graphical representation of function dependencies directly within the Web IDE console.
 
 - **Automatic Language Detection (`src/detector.py`)**
   - Predicts the programming language of an input code snippet (Python, C/C++, Java, JavaScript, Bash) using:
@@ -59,7 +65,7 @@ This project covers the complete compilation pipeline, from **lexical analysis**
   - Full Docker support for environment isolation, containerized testing, and seamless deployment.
 
 - **Automated Unit Testing & Coverage**
-  - Full `pytest` integration covering Lexer, Parser, Semantic Analyzer, and Language Detector components.
+  - Full `pytest` integration covering Lexer, Parser, Semantic Analyzer, and Language Detector components with coverage report generation.
 
 - **CI/CD Automation**
   - GitHub Actions automatically runs tests, generates HTML outputs, and deploys reports to GitHub Pages.
@@ -102,10 +108,6 @@ CompilerProject/
 ├── web_ui.py
 ├── main.py
 └── README.md
-```
-
----
-
 # 💻 Installation & Usage
 
 ## Prerequisites
@@ -127,7 +129,7 @@ pip install -r requirements.txt
 python main.py tests/test_code.c
 ```
 
-### Launch the Web IDE
+### Launch the Web IDE (with AST Visualizer)
 
 ```bash
 python web_ui.py
