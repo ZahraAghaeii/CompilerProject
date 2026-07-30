@@ -6,8 +6,18 @@ from src.semantic import SemanticAnalyzer
 from src.program_analysis import ProgramAnalyzer
 from src.detector import LanguageDetector
 from src.ir_generator import IRGenerator
+from src.preprocessor import Preprocessor
+from src.python_plugin import PythonPlugin
+from src.dominator_tree import DominatorTreeBuilder
+from src.reaching_definitions import ReachingDefinitionsAnalyzer
+from src.ssa_transformer import SSATransformer
+from src.incremental_parser import IncrementalParser
 
 app = Flask(__name__)
+
+# Single global instance to maintain AST caching state across keystrokes/requests
+incremental_parser_instance = IncrementalParser()
+previous_code_cache = ""
 
 HTML_TEMPLATE = """
 <!DOCTYPE html>
@@ -42,15 +52,24 @@ HTML_TEMPLATE = """
             <div class="panel">
                 <h3 style="margin-top: 0; color: #ce9178;">Source Code</h3>
                 <textarea id="code">int main() {
-    int x = 5 + 3;
-    int unused_var;
-    int y = x * 2;
-    return y;
+    int x = 10;
+    if (x > 5) {
+        x = 20;
+    } else {
+        x = 30;
+    }
+    return x;
 }</textarea>
             </div>
 
             <div class="panel">
                 <h3 style="margin-top: 0; color: #4ec9b0;">Program Analysis & Optimization (Bonus Features)</h3>
+                <button onclick="runPreprocess()" style="background-color: #b5ce28; color: #1e1e1e;">⚙️ Expand Macros</button>
+                <button onclick="runPythonPlugin()" style="background-color: #3572A5;">🐍 Parse Python (Plugin)</button>
+                <button onclick="runDominatorTree()" style="background-color: #8A2BE2;">🌳 Dominator Tree</button>
+                <button onclick="runReachingDefinitions()" style="background-color: #008080;">📍 Reaching Definitions</button>
+                <button onclick="runSSAForm()" style="background-color: #D35400;">🔄 SSA Form (ϕ)</button>
+                <button onclick="runIncrementalParse()" style="background-color: #F39C12; color: #1e1e1e;">⚡ Incremental Parse</button>
                 <button onclick="runAnalysis('dead-code')">💀 Detect Dead Code</button>
                 <button onclick="runAnalysis('eliminate-dead-code')" style="background-color: #d16969;">✂️ Eliminate Dead Code (DCE)</button>
                 <button onclick="runAnalysis('generate-ir')" style="background-color: #ce9178;">⚡ Generate TAC (IR Code)</button>
@@ -105,6 +124,48 @@ HTML_TEMPLATE = """
         function showVisual() {
             document.getElementById('output').style.display = 'none';
             document.getElementById('visual-canvas').style.display = 'block';
+        }
+
+        async function runPreprocess() {
+            showConsole();
+            document.getElementById('output').innerText = "Expanding macros & preprocessing... ⏳";
+            const res = await postData('/preprocess', { code: getCode() });
+            document.getElementById('output').innerText = res.output;
+        }
+
+        async function runPythonPlugin() {
+            showConsole();
+            document.getElementById('output').innerText = "Parsing Python code via plugin... ⏳";
+            const res = await postData('/parse-python', { code: getCode() });
+            document.getElementById('output').innerText = res.output;
+        }
+
+        async function runDominatorTree() {
+            showConsole();
+            document.getElementById('output').innerText = "Calculating Dominator Tree... ⏳";
+            const res = await postData('/dominator-tree', { code: getCode() });
+            document.getElementById('output').innerText = res.output;
+        }
+
+        async function runReachingDefinitions() {
+            showConsole();
+            document.getElementById('output').innerText = "Analyzing Reaching Definitions... ⏳";
+            const res = await postData('/reaching-definitions', { code: getCode() });
+            document.getElementById('output').innerText = res.output;
+        }
+
+        async function runSSAForm() {
+            showConsole();
+            document.getElementById('output').innerText = "Transforming to SSA Form (ϕ)... ⏳";
+            const res = await postData('/ssa-form', { code: getCode() });
+            document.getElementById('output').innerText = res.output;
+        }
+
+        async function runIncrementalParse() {
+            showConsole();
+            document.getElementById('output').innerText = "Performing Tree-sitter style Incremental Re-Parse... ⏳";
+            const res = await postData('/incremental-parse', { code: getCode() });
+            document.getElementById('output').innerText = res.output;
         }
 
         async function runAnalysis(endpoint) {
@@ -197,6 +258,132 @@ def analyze_code_from_web(code_text):
 @app.route('/')
 def index():
     return render_template_string(HTML_TEMPLATE)
+
+
+@app.route('/preprocess', methods=['POST'])
+def preprocess():
+    preprocessor = Preprocessor()
+    result = preprocessor.process(request.json['code'])
+
+    output_text = "=== MACRO EXPANSION & PREPROCESSING ===\n\n"
+    if result["macros_found"]:
+        output_text += "📌 Defined Macros:\n"
+        for k, v in result["macros_found"].items():
+            output_text += f"  • {k} ➔ {v}\n"
+        output_text += "\n📌 Expansions Applied:\n"
+        for note in result["expansion_notes"]:
+            output_text += f"  • {note}\n"
+        output_text += "\n=== PREPROCESSED SOURCE CODE ===\n\n"
+        output_text += result["expanded_code"]
+    else:
+        output_text += "No #define directives found in the source code."
+
+    return jsonify({"output": output_text})
+
+
+@app.route('/parse-python', methods=['POST'])
+def parse_python():
+    plugin = PythonPlugin()
+    result = plugin.parse(request.json['code'])
+
+    output_text = "=== MULTI-LANGUAGE PLUGIN: PYTHON PARSER ===\n\n"
+    output_text += f"📌 Language: {result['language']}\n"
+    output_text += f"📌 Total Lines: {result['total_lines']}\n\n"
+    output_text += "🔍 Extracted Functions:\n"
+    for fn in result['functions']:
+        output_text += f"  • {fn}()\n"
+    if not result['functions']:
+        output_text += "  (None)\n"
+
+    output_text += "\n🔍 Extracted Variables:\n"
+    for var in result['variables']:
+        output_text += f"  • {var}\n"
+    if not result['variables']:
+        output_text += "  (None)\n"
+
+    return jsonify({"output": output_text})
+
+
+@app.route('/dominator-tree', methods=['POST'])
+def dominator_tree():
+    builder = DominatorTreeBuilder()
+    result = builder.analyze(request.json['code'])
+
+    output_text = "=== CONTROL FLOW GRAPH: DOMINATOR TREE ANALYSIS ===\n\n"
+    output_text += "📌 Dominator Sets (Dom(n)):\n"
+    for block, doms in result["dominators"].items():
+        output_text += f"  • Dom({block}) = {{ {', '.join(doms)} }}\n"
+
+    output_text += "\n📌 Immediate Dominators (IDom(n)):\n"
+    for block, idom in result["idom"].items():
+        output_text += f"  • IDom({block}) ➔ {idom}\n"
+
+    return jsonify({"output": output_text})
+
+
+@app.route('/reaching-definitions', methods=['POST'])
+def reaching_definitions():
+    analyzer = ReachingDefinitionsAnalyzer()
+    result = analyzer.analyze(request.json['code'])
+
+    output_text = "=== DATA-FLOW ANALYSIS: REACHING DEFINITIONS ===\n\n"
+    output_text += "📌 Defined Assignments (Definitions):\n"
+    for d in result["definitions"]:
+        output_text += f"  • {d}\n"
+
+    output_text += "\n📌 GEN and KILL Sets per Basic Block:\n"
+    for block, gk in result["gen_kill"].items():
+        output_text += f"  • {block}:\n"
+        output_text += f"      GEN  = {{ {', '.join(gk['GEN'])} }}\n"
+        output_text += f"      KILL = {{ {', '.join(gk['KILL'])} }}\n"
+
+    output_text += "\n📌 IN and OUT Sets per Basic Block:\n"
+    for block, in_out in result["reaching"].items():
+        output_text += f"  • {block}:\n"
+        output_text += f"      IN  = {{ {', '.join(in_out['IN'])} }}\n"
+        output_text += f"      OUT = {{ {', '.join(in_out['OUT'])} }}\n"
+
+    return jsonify({"output": output_text})
+
+
+@app.route('/ssa-form', methods=['POST'])
+def ssa_form():
+    transformer = SSATransformer()
+    result = transformer.transform(request.json['code'])
+
+    output_text = "=== STATIC SINGLE ASSIGNMENT (SSA) FORM TRANSFORMATION ===\n\n"
+    output_text += "📌 Inserted Phi-Functions (ϕ):\n"
+    for phi in result["phi_nodes"]:
+        output_text += f"  • {phi}\n"
+
+    output_text += "\n=== TRANSFORMED SSA CODE ===\n\n"
+    output_text += "\n".join(result["ssa"])
+
+    return jsonify({"output": output_text})
+
+
+@app.route('/incremental-parse', methods=['POST'])
+def incremental_parse():
+    global previous_code_cache
+    new_code = request.json['code']
+
+    if not previous_code_cache:
+        result = incremental_parser_instance.parse_full(new_code)
+        previous_code_cache = new_code
+        output_text = "=== INCREMENTAL PARSER: INITIAL FULL PARSE ===\n\n"
+        output_text += f"📌 Mode: {result['mode']}\n"
+        output_text += f"📌 Total Lines Parsed: {result['total_lines_parsed']}\n"
+        output_text += f"📌 AST Cache Initialized with {result['ast_cache_size']} nodes.\n"
+    else:
+        result = incremental_parser_instance.parse_incremental(previous_code_cache, new_code)
+        previous_code_cache = new_code
+        output_text = "=== INCREMENTAL PARSER: PARTIAL TREE RE-PARSE ===\n\n"
+        output_text += f"📌 Mode: {result['mode']} (Tree-sitter strategy)\n"
+        output_text += f"📌 Modified Line Regions Detected: {result['modified_regions']}\n"
+        output_text += f"📌 Reparsed Lines: {result['reparsed_lines']}\n"
+        output_text += f"📌 Status: {result['status']}\n"
+
+    return jsonify({"output": output_text})
 
 
 @app.route('/dead-code', methods=['POST'])
