@@ -75,8 +75,9 @@ class IRGenerator:
                 self.generate(node.body)
 
     def gen_VarDeclNode(self, node):
-        if hasattr(node, 'init_expr') and node.init_expr:
-            val = self.generate(node.init_expr)
+        init_expr = getattr(node, 'init_expr', getattr(node, 'initializer', None))
+        if init_expr:
+            val = self.generate(init_expr)
             self.instructions.append(TACInstruction('=', val, None, node.name))
         return node.name
 
@@ -87,6 +88,13 @@ class IRGenerator:
         return target
 
     def gen_BinaryOpNode(self, node):
+        left = self.generate(node.left)
+        right = self.generate(node.right)
+        temp = self.new_temp()
+        self.instructions.append(TACInstruction(node.op, left, right, temp))
+        return temp
+
+    def gen_BinaryExprNode(self, node):
         left = self.generate(node.left)
         right = self.generate(node.right)
         temp = self.new_temp()
