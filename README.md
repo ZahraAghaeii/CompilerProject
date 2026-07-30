@@ -144,7 +144,7 @@ Execute all unit tests:
 python -m unittest discover -s tests
 ``` -->
 
----
+<!-- --- -->
 
 # 📊 CI/CD Workflow
 
