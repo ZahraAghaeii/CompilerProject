@@ -26,10 +26,16 @@ class Preprocessor:
 
         # Pass 2: Expand macros in the remaining code
         for name, value in self.macros.items():
-            pattern = r'\b' + re.escape(name) + r'\b'
-            if re.search(pattern, output_code):
+            pattern = r'("[^"\\]*(?:\\.[^"\\]*)*")|\b' + re.escape(name) + r'\b'
+
+            def replacement_logic(match):
+                if match.group(1):
+                    return match.group(1)
+                return value
+
+            if re.search(r'\b' + re.escape(name) + r'\b', output_code):
                 expanded_sites.append(f"Expanded macro '{name}' to '{value}'")
-                output_code = re.sub(pattern, value, output_code)
+                output_code = re.sub(pattern, replacement_logic, output_code)
 
         return {
             "expanded_code": output_code,

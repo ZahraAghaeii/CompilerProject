@@ -286,29 +286,52 @@ class ProgramAnalyzer:
 
     def eliminate_dead_code(self):
         """
-        Bonus Feature: Performs actual Dead Code Elimination (DCE).
-        Removes unused variables and unreachable lines from source code.
+        Bonus Feature: Performs actual Cascading Dead Code Elimination (DCE).
         """
         lines = list(self.code_lines)
-        dead_reports = self.detect_dead_code()
-        lines_to_remove = set()
+        changed = True
 
-        for report in dead_reports:
-            if "UNUSED VARIABLE" in report and "line" in report:
-                try:
-                    line_num = int(report.split("line")[1].split()[0].strip())
-                    lines_to_remove.add(line_num - 1)
-                except ValueError:
-                    pass
-            elif "UNREACHABLE CODE" in report and "line" in report:
-                try:
-                    line_num = int(report.split("line")[1].split()[0].strip())
-                    lines_to_remove.add(line_num - 1)
-                except ValueError:
-                    pass
+        while changed:
+            changed = False
+            dead_reports = self.detect_dead_code()
+            lines_to_remove = set()
 
-        optimized_lines = [line for idx, line in enumerate(lines) if idx not in lines_to_remove]
-        return "\n".join(optimized_lines)
+            for report in dead_reports:
+                if "UNUSED VARIABLE" in report and "line" in report:
+                    try:
+                        line_num = int(report.split("line")[1].split()[0].strip())
+                        lines_to_remove.add(line_num - 1)
+                    except ValueError:
+                        pass
+                elif "UNREACHABLE CODE" in report and "line" in report:
+                    try:
+                        line_num = int(report.split("line")[1].split()[0].strip())
+                        lines_to_remove.add(line_num - 1)
+                    except ValueError:
+                        pass
+
+            if lines_to_remove:
+                lines = [line for idx, line in enumerate(lines) if idx not in lines_to_remove]
+                self.code_lines = lines
+                self.code = "\n".join(lines)
+
+                from src.lexer import Lexer
+                from src.parser import Parser
+                from src.semantic import SemanticAnalyzer
+                try:
+                    lex = Lexer(self.code)
+                    t, _ = lex.tokenize()
+                    p = Parser(t)
+                    new_ast = p.parse()
+                    sema = SemanticAnalyzer(self.file_name)
+                    sema.analyze(new_ast)
+                    self.ast = new_ast
+                    self.global_scope = sema.global_scope
+                    changed = True
+                except:
+                    break
+
+        return "\n".join(lines)
 
     def _check_dead_vars_in_scope(self, scope, reports):
         if not scope:

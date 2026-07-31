@@ -120,3 +120,18 @@ class IRGenerator:
 
     def get_code(self):
         return "\n".join(str(instr) for instr in self.instructions)
+
+    def gen_IfStmtNode(self, node):
+        cond_temp = self.generate(node.condition)
+        end_label = self.new_label()
+
+        self.instructions.append(TACInstruction('JUMP_IF_FALSE', cond_temp, None, end_label))
+
+        if hasattr(node, 'then_branch'):
+            if hasattr(node.then_branch, 'statements'):
+                for stmt in node.then_branch.statements:
+                    self.generate(stmt)
+            else:
+                self.generate(node.then_branch)
+
+        self.instructions.append(TACInstruction('LABEL', None, None, end_label))
