@@ -220,6 +220,13 @@ Verifies the CFG Dominator Tree logic and the proper insertion of $\phi$-functio
 ```bash
 python -m pytest tests/test_advanced_analysis.py
 ```
+### 3. Incremental Parser Tests (`tests/test_incremental_parser.py`)
+Validates the AST caching mechanism to ensure only modified lines are re-parsed for better IDE performance.
+
+**Run this test:**
+```bash
+python -m pytest tests/test_incremental_parser.py
+```
 
 ---
 
