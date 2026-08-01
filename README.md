@@ -227,7 +227,12 @@ Validates the AST caching mechanism to ensure only modified lines are re-parsed 
 ```bash
 python -m pytest tests/test_incremental_parser.py
 ```
+### 4. Lexer Edge Cases Tests (`tests/test_lexer_edges.py`)
+Tests error recovery mechanisms for specific syntax mistakes like unclosed block comments, unterminated strings, and invalid characters.
 
+**Run this test:**
+```bash
+python -m pytest tests/test_lexer_edges.py
 ---
 
 # 📊 CI/CD Workflow
