@@ -213,6 +213,14 @@ Verifies Macro Expansions (`#define`) and ensures no name collision occurs durin
 python -m pytest tests/test_preprocessor.py
 ```
 
+### 2. Advanced Analysis Tests (`tests/test_advanced_analysis.py`)
+Verifies the CFG Dominator Tree logic and the proper insertion of $\phi$-functions for Static Single Assignment (SSA) form.
+
+**Run this test:**
+```bash
+python -m pytest tests/test_advanced_analysis.py
+```
+
 ---
 
 # 📊 CI/CD Workflow
