@@ -205,6 +205,14 @@ pytest tests/
 pytest --cov=src tests/
 ```
 
+### 1. Preprocessor Tests (`tests/test_preprocessor.py`)
+Verifies Macro Expansions (`#define`) and ensures no name collision occurs during replacement.
+
+**Run this test:**
+```bash
+python -m pytest tests/test_preprocessor.py
+```
+
 ---
 
 # 📊 CI/CD Workflow
