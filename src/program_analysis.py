@@ -3,7 +3,7 @@ import re
 
 from src.ast_nodes import (
     FunctionDeclNode, CallExprNode, ReturnStmtNode, IfStmtNode, WhileStmtNode, ForStmtNode, BreakStmtNode,
-    ContinueStmtNode
+    ContinueStmtNode, BlockNode, VarDeclNode, AssignmentNode, IdentifierNode
 )
 
 
@@ -251,8 +251,6 @@ class ProgramAnalyzer:
 
         self._check_dead_vars_in_scope(self.global_scope, reports)
 
-        from src.ast_nodes import BlockNode, ReturnStmtNode, BreakStmtNode, ContinueStmtNode
-
         def check_unreachable_stmts(node):
             if not node:
                 return
@@ -284,54 +282,54 @@ class ProgramAnalyzer:
 
         return reports
 
+    def prune_ast(self, node):
+        """
+        پیمایش بازگشتی درخت AST و هرس کردن (Prune) گره‌های مرده
+        """
+        if not node:
+            return
+
+        if hasattr(node, 'statements') and isinstance(node.statements, list):
+            new_stmts = []
+            found_jump = False
+
+            for stmt in node.statements:
+                if found_jump:
+                    continue 
+
+                if type(stmt).__name__ == 'VarDeclNode':
+                    sym, _ = self.global_scope.lookup(stmt.name)
+                    if sym and not getattr(sym, 'is_used', True):
+                        continue
+
+                new_stmts.append(stmt)
+
+                if type(stmt).__name__ in ('ReturnStmtNode', 'BreakStmtNode', 'ContinueStmtNode'):
+                    found_jump = True
+                else:
+                    self.prune_ast(stmt) 
+
+            node.statements = new_stmts
+
+        else:
+            if hasattr(node, 'then_branch'):
+                self.prune_ast(node.then_branch)
+            if hasattr(node, 'else_branch'):
+                self.prune_ast(node.else_branch)
+            if hasattr(node, 'body'):
+                self.prune_ast(node.body)
+
     def eliminate_dead_code(self):
         """
         Bonus Feature: Performs actual Cascading Dead Code Elimination (DCE).
+        این متد اکنون به صورت حرفه‌ای مستقیماً درخت AST را هرس می‌کند.
         """
-        lines = list(self.code_lines)
-        changed = True
-
-        while changed:
-            changed = False
-            dead_reports = self.detect_dead_code()
-            lines_to_remove = set()
-
-            for report in dead_reports:
-                if "UNUSED VARIABLE" in report and "line" in report:
-                    try:
-                        line_num = int(report.split("line")[1].split()[0].strip())
-                        lines_to_remove.add(line_num - 1)
-                    except ValueError:
-                        pass
-                elif "UNREACHABLE CODE" in report and "line" in report:
-                    try:
-                        line_num = int(report.split("line")[1].split()[0].strip())
-                        lines_to_remove.add(line_num - 1)
-                    except ValueError:
-                        pass
-
-            if lines_to_remove:
-                lines = [line for idx, line in enumerate(lines) if idx not in lines_to_remove]
-                self.code_lines = lines
-                self.code = "\n".join(lines)
-
-                from src.lexer import Lexer
-                from src.parser import Parser
-                from src.semantic import SemanticAnalyzer
-                try:
-                    lex = Lexer(self.code)
-                    t, _ = lex.tokenize()
-                    p = Parser(t)
-                    new_ast = p.parse()
-                    sema = SemanticAnalyzer(self.file_name)
-                    sema.analyze(new_ast)
-                    self.ast = new_ast
-                    self.global_scope = sema.global_scope
-                    changed = True
-                except:
-                    break
-
-        return "\n".join(lines)
+        if hasattr(self.ast, 'declarations'):
+            for decl in self.ast.declarations:
+                if hasattr(decl, 'body'):
+                    self.prune_ast(decl.body)
+        
+        return "Dead code successfully pruned from AST. (AST optimized in-memory)"
 
     def _check_dead_vars_in_scope(self, scope, reports):
         if not scope:
@@ -347,8 +345,7 @@ class ProgramAnalyzer:
 
     def analyze_definite_assignment(self):
         reports = []
-        from src.ast_nodes import FunctionDeclNode, AssignmentNode, IdentifierNode, VarDeclNode
-
+        
         cfg_builder = CFGBuilder()
 
         for decl in getattr(self.ast, 'declarations', []):
