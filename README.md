@@ -127,9 +127,14 @@ CompilerProject/
 │   ├── semantic.py
 │   └── ssa_transformer.py
 ├── tests/
-│   ├── test_compiler.py
+│   ├── __pycache__/
 │   ├── semantic_test.c
+│   ├── test_advanced_analysis.py
 │   ├── test_code.c
+│   ├── test_compiler.py
+│   ├── test_incremental_parser.py
+│   ├── test_lexer_edges.py
+│   ├── test_preprocessor.py
 │   ├── test_semantic_errors.c
 │   ├── test_semantic_scopes.c
 │   └── test_semantic_types.c
