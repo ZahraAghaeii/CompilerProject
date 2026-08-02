@@ -202,7 +202,7 @@ This project uses `pytest` and `pytest-cov` for automated testing and code cover
 
 ### Run Unit Tests
 ```bash
-pytest tests/
+python -m pytest tests/
 ```
 
 ### Run Tests with Coverage Report
@@ -238,6 +238,7 @@ Tests error recovery mechanisms for specific syntax mistakes like unclosed block
 **Run this test:**
 ```bash
 python -m pytest tests/test_lexer_edges.py
+```
 ---
 
 # 📊 CI/CD Workflow
