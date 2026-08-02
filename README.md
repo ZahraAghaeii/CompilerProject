@@ -207,7 +207,7 @@ python -m pytest tests/
 
 ### Run Tests with Coverage Report
 ```bash
-pytest --cov=src tests/
+python -m pytest --cov=src tests/
 ```
 
 ### 1. Preprocessor Tests (`tests/test_preprocessor.py`)
