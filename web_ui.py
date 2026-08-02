@@ -51,14 +51,24 @@ HTML_TEMPLATE = """
         <div class="editor-section">
             <div class="panel">
                 <h3 style="margin-top: 0; color: #ce9178;">Source Code</h3>
-                <textarea id="code">int main() {
+                <textarea id="code">int add(int a, int b) {
+    return a + b;
+}
+
+int main() {
     int x = 10;
+    int y = 20;
+    int z = add(x, y);
+    int dead_var = 100;
+    
     if (x > 5) {
-        x = 20;
+        y = 30;
     } else {
-        x = 30;
+        y = 40;
     }
-    return x;
+    
+    return y;
+    x = 50;
 }</textarea>
             </div>
 
