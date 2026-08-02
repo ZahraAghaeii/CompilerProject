@@ -59,7 +59,7 @@ int main() {
     int x = 10;
     int y = 20;
     int z = add(x, y);
-    int dead_var = 100;
+    int d = 100;
     
     if (x > 5) {
         y = 30;
