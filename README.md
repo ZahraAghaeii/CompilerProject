@@ -127,9 +127,14 @@ CompilerProject/
 │   ├── semantic.py
 │   └── ssa_transformer.py
 ├── tests/
-│   ├── test_compiler.py
+│   ├── __pycache__/
 │   ├── semantic_test.c
+│   ├── test_advanced_analysis.py
 │   ├── test_code.c
+│   ├── test_compiler.py
+│   ├── test_incremental_parser.py
+│   ├── test_lexer_edges.py
+│   ├── test_preprocessor.py
 │   ├── test_semantic_errors.c
 │   ├── test_semantic_scopes.c
 │   └── test_semantic_types.c
@@ -205,6 +210,34 @@ pytest tests/
 pytest --cov=src tests/
 ```
 
+### 1. Preprocessor Tests (`tests/test_preprocessor.py`)
+Verifies Macro Expansions (`#define`) and ensures no name collision occurs during replacement.
+
+**Run this test:**
+```bash
+python -m pytest tests/test_preprocessor.py
+```
+
+### 2. Advanced Analysis Tests (`tests/test_advanced_analysis.py`)
+Verifies the CFG Dominator Tree logic and the proper insertion of $\phi$-functions for Static Single Assignment (SSA) form.
+
+**Run this test:**
+```bash
+python -m pytest tests/test_advanced_analysis.py
+```
+### 3. Incremental Parser Tests (`tests/test_incremental_parser.py`)
+Validates the AST caching mechanism to ensure only modified lines are re-parsed for better IDE performance.
+
+**Run this test:**
+```bash
+python -m pytest tests/test_incremental_parser.py
+```
+### 4. Lexer Edge Cases Tests (`tests/test_lexer_edges.py`)
+Tests error recovery mechanisms for specific syntax mistakes like unclosed block comments, unterminated strings, and invalid characters.
+
+**Run this test:**
+```bash
+python -m pytest tests/test_lexer_edges.py
 ---
 
 # 📊 CI/CD Workflow
